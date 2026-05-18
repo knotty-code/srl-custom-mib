@@ -54,6 +54,35 @@ Turn any gNMI path (fan speed, temperature, optics, MTU, QoS, etc.) into a stand
    snmpwalk -v2c -c <community> <router-ip> 1.3.6.1.4.1.6527.100.5.1   # interface MTU
    ```
 
+## What the Generator Output Means
+
+When you run the generator, you’ll see something like this:
+
+```bash
+🚀 Starting Simplified Custom SNMP MIB Generator
+📦 Processing → nokiaControlTemperatureTable
+   🔨 Installing nokiaControlTemperatureTable.yaml
+   🔨 Installing nokiaControlTemperatureTable.py
+   ℹ️ Already in table-definitions
+   🧹 Cleaned /tmp
+🎉 All MIBs installed successfully!
+Run: /tools system app-management application snmp_server-mgmt restart
+```
+
+Here’s what it’s actually telling you:
+
+| Emoji / Message                     | What it really means                                                                 |
+|-------------------------------------|---------------------------------------------------------------------------------------|
+| `🚀 Starting...`                    | "Okay, let's do this thing."                                                          |
+| `📦 Processing → ...`               | "I'm working on this table now."                                                      |
+| `🔨 Installing ...yaml`             | "Writing the table definition (the YAML part)."                                       |
+| `🔨 Installing ...py`               | "Writing the actual Python code that turns gNMI JSON into SNMP answers."              |
+| `ℹ️ Already in table-definitions`   | "You already had this table — I'm not going to duplicate it like a noob."            |
+| `🧹 Cleaned /tmp`                   | "I'm a neat freak — I cleaned up the temporary files I made."                        |
+| `🎉 All MIBs installed successfully!` | "Victory! Everything is in place. Now go restart SNMP like a responsible adult."     |
+
+It’s basically the generator’s way of saying: “I did the boring file-copying and config-editing stuff for you so you don’t have to.”
+
 ## Understanding `mibs.yaml`
 
 This file controls which MIBs get created. It is intentionally simple and well-commented.
@@ -73,22 +102,7 @@ info from state / platform fan-tray * | as json
 info from state / interface * mtu | as json
 ```
 
-### Field descriptions
-
-| Field              | Description                                                                 | Example                     |
-|--------------------|-----------------------------------------------------------------------------|-----------------------------|
-| `table_name`       | SNMP table name (must be unique)                                            | `nokiaControlTemperatureTable` |
-| `oid_base`         | Base OID for the table                                                      | `1.3.6.1.4.1.6527.100.2.1` |
-| `path`             | Full gNMI path                                                              | `/platform/control[slot=*]/temperature` |
-| `top_level_key`    | The main list name under "platform" in the JSON                             | `control`                   |
-| `index_field`      | JSON key that identifies each row                                           | `slot` or `name`            |
-| `index_name`       | Friendly name for the index column                                          | `controlSlot`               |
-| `index_oid`        | OID for the index column                                                    | `1.3.6.1.4.1.6527.100.2.1.1` |
-| `value_field`      | The leaf you want (no dotted notation needed)                               | `instant` or `speed`        |
-| `column_name`      | Friendly name for the value column                                          | `temperatureInstant`        |
-| `column_oid`       | OID for the value column                                                    | `1.3.6.1.4.1.6527.100.2.1.2` |
-| `column_syntax`    | SNMP data type                                                              | `integer32`, `gauge32`      |
-| `description`      | Human readable comment                                                      | `Control card CPU temperature in Celsius` |
+Use the JSON output to fill in the fields described at the top of `mibs.yaml`.
 
 ### Included MIBs
 
@@ -111,4 +125,3 @@ info from state / interface * mtu | as json
    ```
 
 Made with ❤️ for the SR Linux community.
-```
