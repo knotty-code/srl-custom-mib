@@ -1,0 +1,88 @@
+# =============================================================================
+# SR Linux Custom SNMP MIB Definitions (Simplified Format)
+# =============================================================================
+#
+# How to add a new MIB:
+#   1. Run: info from state / platform <container> * <leaf> detail | as json
+#   2. Look at the JSON output and fill in the fields below
+#   3. Run: python3 generate_custom_mib.py mibs.yaml
+#
+# Required fields:
+#   table_name      → SNMP table name (must be unique)
+#   oid_base        → Base OID (use 1.3.6.1.4.1.6527.100.X.1)
+#   path            → Full gNMI path
+#   top_level_key   → Main list name under "platform" (e.g. "control", "fan-tray")
+#   index_field     → JSON key for the index (usually "slot", "id")
+#   index_name      → Friendly name for the index column
+#   index_oid       → OID for the index (usually ends in .1)
+#   value_field     → Final leaf name only (e.g. "instant", "speed") — no dotted notation needed
+#   column_name     → Friendly name for the value column
+#   column_oid      → OID for the value column (usually ends in .2)
+#   column_syntax   → integer32, gauge32, etc.
+#
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Example 1: Control Card Temperature
+# ─────────────────────────────────────────────────────────────────────────────
+- table_name:      nokiaControlTemperatureTable
+  oid_base:        1.3.6.1.4.1.6527.100.2.1
+  path:            /platform/control[slot=*]/temperature
+  top_level_key:   control
+  index_field:     slot
+  index_name:      controlSlot
+  index_oid:       1.3.6.1.4.1.6527.100.2.1.1
+  value_field:     instant
+  column_name:     temperatureInstant
+  column_oid:      1.3.6.1.4.1.6527.100.2.1.2
+  column_syntax:   integer32
+  description:     Control card CPU temperature in Celsius
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fan Tray Speed
+# ─────────────────────────────────────────────────────────────────────────────
+- table_name:      nokiaFanSpeedTable
+  oid_base:        1.3.6.1.4.1.6527.100.1.1
+  path:            /platform/fan-tray[id=*]
+  top_level_key:   fan-tray
+  index_field:     id
+  index_name:      fanTrayId
+  index_oid:       1.3.6.1.4.1.6527.100.1.1.1
+  value_field:     speed
+  column_name:     fanSpeed
+  column_oid:      1.3.6.1.4.1.6527.100.1.1.2
+  column_syntax:   gauge32
+  description:     Fan tray speed (returns 0 in Containerlab, real value on hardware)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Interface MTU
+# ─────────────────────────────────────────────────────────────────────────────
+- table_name:      nokiaInterfaceMtuTable
+  oid_base:        1.3.6.1.4.1.6527.100.5.1
+  path:            /interface[name=*]/mtu
+  top_level_key:   interface
+  index_field:     name
+  index_name:      interfaceName
+  index_oid:       1.3.6.1.4.1.6527.100.5.1.1
+  value_field:     mtu
+  column_name:     mtu
+  column_oid:      1.3.6.1.4.1.6527.100.5.1.2
+  column_syntax:   unsigned32
+  description:     Configured MTU size on the interface (in bytes)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Transceiver Output Power (first channel only)
+# ─────────────────────────────────────────────────────────────────────────────
+- table_name:      nokiaOpticsOutputPowerTable
+  oid_base:        1.3.6.1.4.1.6527.100.4.1
+  path:            /interface[name=*]/transceiver/channel[index=1]/output-power
+  top_level_key:   interface
+  index_field:     name
+  index_name:      interfaceName
+  index_oid:       1.3.6.1.4.1.6527.100.4.1.1
+  value_field:     latest-value
+  column_name:     outputPower
+  column_oid:      1.3.6.1.4.1.6527.100.4.1.2
+  column_syntax:   integer32
+  description:     Transceiver channel 1 output power (latest-value in 0.01 dBm). Shows channel 1 only.
+
